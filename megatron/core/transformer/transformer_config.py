@@ -416,6 +416,9 @@ class TransformerConfig(ModelParallelConfig):
     - An integer N: Represents a 1:N ratio, meaning one expert layer for every N-1 dense layers.
     - A list that defines a custom pattern, e.g.: [1,1,1,0,1,1,1,0,1,1,1,0]"""
 
+    moe_first_k_dense_replace: int = None
+    """Replace first k layers of the transformer with dense layers."""
+
     moe_ffn_hidden_size: Optional[int] = None
     """MoE Feed-Forward Network hidden size"""
 

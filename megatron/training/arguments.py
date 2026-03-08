@@ -824,6 +824,19 @@ def validate_args(args, defaults={}):
         assert args.fp16 or args.bf16, \
             'residual connection in fp32 only supported when using fp16 or bf16.'
 
+    # LFu: convert moe_first_k_dense_replace into moe_layer_freq in validate_args
+    if args.moe_first_k_dense_replace:
+        if isinstance(args.moe_layer_freq, int):
+            moe_layer_freq = [
+                1 if (i % args.moe_layer_freq == 0) else 0 for i in range(args.num_layers)
+            ]
+        elif isinstance(args.moe_layer_freq, list):
+            moe_layer_freq = args.moe_layer_freq
+        for i in range(args.moe_first_k_dense_replace):
+            moe_layer_freq[i] = 0
+        args.moe_layer_freq = moe_layer_freq
+
+
     if args.moe_grouped_gemm:
         assert args.bf16, 'Currently GroupedGEMM for MoE only supports bf16 dtype.'
         dc = torch.cuda.get_device_capability()
@@ -2906,6 +2919,8 @@ def _add_moe_args(parser):
                             'where 1 indicates an expert layer and 0 indicates a dense layer. '
                             'Examples: "([0]+[1]*23)": 1 dense layer followed by 23 experts layers, '
                             '"([1]*3+[0]*2)*2": Three expert layers followed by two dense layers, repeated twice.')
+    group.add_argument('--moe-first-k-dense-replace', type=int, default=None,
+                       help='Replace first k layers of the transformer with dense layers.')
     group.add_argument('--moe-ffn-hidden-size', type=int, default=None,
                        help='The hidden size of each expert\'s feed-forward network (ffn). '
                        'If not specified, defaults to the ffn_hidden_size.')
