@@ -878,6 +878,7 @@ class TEGroupedMLP(MegatronModule):
                         bias_parallel,
                         permuted_probs,
                         self.config.activation_func_fp8_input_store,
+                        self.config,
                     )
                 else:
                     raise ValueError("Only support fusion of swiglu in TEGroupedMLP.")
